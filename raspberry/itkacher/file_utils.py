@@ -1,4 +1,4 @@
-from date_utils import DateUtils
+from itkacher.date_utils import DateUtils
 import os
 
 class FileUtils:
