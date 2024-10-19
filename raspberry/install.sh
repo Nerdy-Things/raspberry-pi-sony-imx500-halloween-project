@@ -5,9 +5,9 @@
 # Required - installing dependencies
 sudo apt update && sudo apt full-upgrade
 
-sudo apt install imx500-all
+sudo apt install -y imx500-all
 
-sudo apt install python3-opencv python3-munkres
+sudo apt install -y python3-opencv python3-munkres
 
 pip install model_compression_toolkit --break-system-packages
 pip install imx500-converter[pt] --break-system-packages
@@ -23,7 +23,7 @@ sudo locale-gen
 sudo update-locale LANG=en_US.UTF-8
 
 # Optional - installing FTP
-sudo apt install vsftpd
+sudo apt install -y vsftpd
 sudo sed -i 's/#write_enable=YES/write_enable=YES/' /etc/vsftpd.conf
 sudo systemctl restart vsftpd.service
 
