@@ -9,13 +9,16 @@ sudo apt install imx500-all
 
 sudo apt install python3-opencv python3-munkres
 
-git clone https://github.com/raspberrypi/picamera2.git
+# git clone https://github.com/raspberrypi/picamera2.git
+# git clone https://github.com/raspberrypi/imx500-models.git
 
-git clone https://github.com/raspberrypi/imx500-models.git
 
 pip install model_compression_toolkit --break-system-packages
 pip install imx500-converter[pt] --break-system-packages
 
+# Download models
+git submodule init
+git submodule update
 
 # Optional - Changing Locale
 sudo sed -i 's/LANG=en_US.UTF-8/LANG=en_US.UTF-8/' /etc/default/locale
