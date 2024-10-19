@@ -1,0 +1,29 @@
+#!/bin/bash
+
+# https://www.raspberrypi.com/documentation/accessories/ai-camera.html
+
+# Required - installing dependencies
+sudo apt update && sudo apt full-upgrade
+
+sudo apt install imx500-all
+
+sudo apt install python3-opencv python3-munkres
+
+git clone https://github.com/raspberrypi/picamera2.git
+
+git clone https://github.com/raspberrypi/imx500-models.git
+
+pip install model_compression_toolkit --break-system-packages
+pip install imx500-converter[pt] --break-system-packages
+
+
+# Optional - Changing Locale
+sudo sed -i 's/LANG=en_US.UTF-8/LANG=en_US.UTF-8/' /etc/default/locale
+sudo sed -i 's/# en_US.UTF-8 UTF-8/en_US.UTF-8 UTF-8/' /etc/locale.gen
+sudo locale-gen 
+sudo update-locale LANG=en_US.UTF-8
+
+# Optional - installing FTP
+sudo apt install vsftpd
+sudo sed -i 's/#write_enable=YES/write_enable=YES/' /etc/vsftpd.conf
+sudo systemctl restart vsftpd.service

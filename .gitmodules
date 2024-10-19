@@ -1,0 +1,3 @@
+[submodule "raspberry/imx500-models"]
+	path = raspberry/imx500-models
+	url = https://github.com/raspberrypi/imx500-models.git
