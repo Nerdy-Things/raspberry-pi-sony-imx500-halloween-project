@@ -1,9 +1,11 @@
-import argparse
 import sys
 from functools import lru_cache
 import cv2
 import numpy as np
 import time
+
+from itkacher.date_utils import DateUtils
+from itkacher.file_utils import FileUtils
 
 from picamera2 import MappedArray, Picamera2
 from picamera2.devices import IMX500
@@ -11,7 +13,6 @@ from picamera2.devices.imx500 import (NetworkIntrinsics,
                                       postprocess_nanodet_detection)
 
 import socket
-from time import sleep
 
 last_detections = []
 
@@ -167,7 +168,7 @@ if __name__ == "__main__":
 
     picam2 = Picamera2(imx500.camera_num)
 
-    # Night
+    # Night settings
     controls = {
         "Brightness": 0.25,  # Range is typically from -1.0 to 1.0
         "Contrast": 1.0,    # Increase for sharper contrast in low light
@@ -175,7 +176,7 @@ if __name__ == "__main__":
         "AnalogueGain": 32.0,
     }
 
-    # Day
+    # Day settings
     controls = {}
 
     config = picam2.create_preview_configuration(
@@ -191,12 +192,16 @@ if __name__ == "__main__":
 
     last_results = None
     picam2.pre_callback = draw_detections
-    frame = 0
     print("Started!")
     while True:
-        frame += 1
         last_results = parse_detections(picam2.capture_metadata())
-            # picam2.capture_file(f"assets/images/{frame}.jpg")
+        # Record file to SD card
+        data_folder = f"../data/images/{DateUtils.get_date()}/"
+        try:
+            picam2.capture_file(f"{data_folder}/{DateUtils.get_time()}.jpg")
+        except:
+            FileUtils.create_folders(data_folder)
+
         if (len(last_results) > 0):
             for result in last_results:
                 if result.category == 0: 
