@@ -1,0 +1,10 @@
+.vscode/
+build/
+managed_components/
+DS_Store
+dependencies.lock
+sdkconfig.old
+esp-idf/
+esp-tools/
+main/config.h
+esp-idf-v5.1.2.zip
