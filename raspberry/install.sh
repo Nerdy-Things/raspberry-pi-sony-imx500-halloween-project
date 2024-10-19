@@ -9,10 +9,6 @@ sudo apt install imx500-all
 
 sudo apt install python3-opencv python3-munkres
 
-# git clone https://github.com/raspberrypi/picamera2.git
-# git clone https://github.com/raspberrypi/imx500-models.git
-
-
 pip install model_compression_toolkit --break-system-packages
 pip install imx500-converter[pt] --break-system-packages
 
@@ -30,3 +26,10 @@ sudo update-locale LANG=en_US.UTF-8
 sudo apt install vsftpd
 sudo sed -i 's/#write_enable=YES/write_enable=YES/' /etc/vsftpd.conf
 sudo systemctl restart vsftpd.service
+
+# Opional 
+# in case if you need original repositories.
+# git clone https://github.com/raspberrypi/picamera2.git
+# git clone https://github.com/raspberrypi/imx500-models.git
+
+sudo reboot now
