@@ -5,7 +5,6 @@ import cv2
 import numpy as np
 import time
 
-from libcamera import Transform
 from picamera2 import MappedArray, Picamera2
 from picamera2.devices import IMX500
 from picamera2.devices.imx500 import (NetworkIntrinsics,
@@ -20,6 +19,10 @@ MESSAGE = b"BOO!"  # Message to send
 PORT = 9341
 MESSAGE_COOLDOWN = 10  # Cooldown time in seconds
 last_message_time = 0  # To track the last time a message was sent
+
+threshold = 0.55
+iou = 0.65
+max_detections = 10
 
 def send_udp_message(message: bytes, port: int):
     global last_message_time
@@ -60,9 +63,6 @@ def parse_detections(metadata: dict):
     """Parse the output tensor into a number of detected objects, scaled to the ISP out."""
     global last_detections
     bbox_normalization = intrinsics.bbox_normalization
-    threshold = args.threshold
-    iou = args.iou
-    max_detections = args.max_detections
 
     np_outputs = imx500.get_outputs(metadata, add_batch=True)
     input_w, input_h = imx500.get_input_size()
@@ -142,35 +142,12 @@ def draw_detections(request, stream="main"):
             cv2.rectangle(m.array, (b_x, b_y), (b_x + b_w, b_y + b_h), (255, 0, 0, 0))
 
 
-def get_args():
-    parser = argparse.ArgumentParser()
-    parser.add_argument("--model", type=str, help="Path of the model",
-                        default="/home/itkacher/imx500-models/imx500_network_ssd_mobilenetv2_fpnlite_320x320_pp.rpk")
-    parser.add_argument("--fps", type=int, help="Frames per second")
-    parser.add_argument("--bbox-normalization", action=argparse.BooleanOptionalAction, help="Normalize bbox")
-    parser.add_argument("--threshold", type=float, default=0.55, help="Detection threshold")
-    parser.add_argument("--iou", type=float, default=0.65, help="Set iou threshold")
-    parser.add_argument("--max-detections", type=int, default=10, help="Set max detections")
-    parser.add_argument("--ignore-dash-labels", action=argparse.BooleanOptionalAction, help="Remove '-' labels ")
-    parser.add_argument("--postprocess", choices=["", "nanodet"],
-                        default=None, help="Run post process of type")
-    parser.add_argument("-r", "--preserve-aspect-ratio", action=argparse.BooleanOptionalAction,
-                        help="preserve the pixel aspect ratio of the input tensor")
-    parser.add_argument("--labels", type=str,
-                        help="Path to the labels file")
-    parser.add_argument("--print-intrinsics", action="store_true",
-                        help="Print JSON network_intrinsics then exit")
-    return parser.parse_args()
-
-
 if __name__ == "__main__":
-    args = get_args()
 
-    model = args.model
-    model = "/home/itkacher/imx500-models/imx500_network_ssd_mobilenetv2_fpnlite_320x320_pp.rpk"
-    # model = "/home/itkacher/imx500-models/imx500_network_efficientdet_lite0_pp.rpk"
-    # model = "/home/itkacher/imx500-models/imx500_network_nanodet_plus_416x416.rpk"
-    # model = "/home/itkacher/imx500-models/imx500_network_nanodet_plus_416x416_pp.rpk"
+    model = "./imx500-models/imx500_network_ssd_mobilenetv2_fpnlite_320x320_pp.rpk"
+    # model = "./imx500-models/imx500_network_efficientdet_lite0_pp.rpk"
+    # model = "./imx500-models/imx500_network_nanodet_plus_416x416.rpk"
+    # model = "./imx500-models/imx500_network_nanodet_plus_416x416_pp.rpk"
 
     # This must be called before instantiation of Picamera2
     imx500 = IMX500(model)
@@ -182,23 +159,11 @@ if __name__ == "__main__":
         print("Network is not an object detection task", file=sys.stderr)
         exit()
 
-    # Override intrinsics from args
-    for key, value in vars(args).items():
-        if key == 'labels' and value is not None:
-            with open(value, 'r') as f:
-                intrinsics.labels = f.read().splitlines()
-        elif hasattr(intrinsics, key) and value is not None:
-            setattr(intrinsics, key, value)
-
     # Defaults
     if intrinsics.labels is None:
         with open("assets/coco_labels.txt", "r") as f:
             intrinsics.labels = f.read().splitlines()
     intrinsics.update_with_defaults()
-
-    if args.print_intrinsics:
-        print(intrinsics)
-        exit()
 
     picam2 = Picamera2(imx500.camera_num)
 
@@ -231,8 +196,8 @@ if __name__ == "__main__":
     while True:
         frame += 1
         last_results = parse_detections(picam2.capture_metadata())
-        if (len(last_results) > 0):
             # picam2.capture_file(f"assets/images/{frame}.jpg")
+        if (len(last_results) > 0):
             for result in last_results:
                 if result.category == 0: 
                     print("Person detected, sending BOO!")
