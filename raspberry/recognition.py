@@ -1,3 +1,7 @@
+# This is a modified file of an official Raspberry PI example. Origin file: 
+# https://github.com/raspberrypi/picamera2/blob/main/examples/imx500/imx500_object_detection_demo.py
+# BSD 2-Clause License. For additional information read: LICENCE-Raspberry-PI
+
 import sys
 from functools import lru_cache
 import cv2
